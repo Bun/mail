@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from collections import UserList
+
+
+class fancylist(UserList):
+    """Hacky way of enabling single-item lists to be represented as their
+    string value"""
+    def __str__(self):
+        return ':'.join(self)
+
 
 if __name__ == '__main__':
     from jinja2 import Template
@@ -15,9 +24,10 @@ if __name__ == '__main__':
     template = argv[1]
     keys = {'fqdn': fqdn}
     for fname in listdir(conf_dir):
-        keys[fname] = list(filter(None,
-                                  (line.rstrip()
-                                   for line in open(join(conf_dir, fname)))))
+        items = filter(None,
+                       (line.rstrip()
+                        for line in open(join(conf_dir, fname))))
+        keys[fname] = fancylist(items)
     keys.setdefault('dkim_selector', 'dkim')
     t = Template(open(template).read())
     data = t.render(**keys).rstrip('\n')
