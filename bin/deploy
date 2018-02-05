@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+
+render() {
+    echo "/etc/$1"
+    ./bin/jinja-render "$1" > "/etc/$1"
+}
+
+echo "Creating configuration..."
+
+render opendkim/keys
+render opendkim/signing
+render opendkim/opendkim.conf
+
+ln -nsf /var/lib/acme/live /etc/dovecot/cert
+render dovecot/dovecot.conf
+
+ln -nsf /var/lib/acme/live /etc/postfix/cert
+
+# XXX: render?
+cp config/aliases /etc/postfix/aliases
+postalias /etc/postfix/aliases
+cp config/virtual postfix/virtual
+postalias /etc/postfix/virtual
+
+render postfix/main.cf
+render postfix/master.cf
+
+echo "Done"

@@ -1,0 +1,3 @@
+{% for domain in domains -%}
+{{ domain }} {{ domain }}:{{ dkim_selector }}:/etc/opendkim/privkeys/{{ domain }}.key
+{% endfor %}

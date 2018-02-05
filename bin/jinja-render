@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+if __name__ == '__main__':
+    from jinja2 import Template
+
+    from os import listdir
+    from os.path import join
+    from sys import argv
+    from subprocess import check_output
+
+    fqdn = check_output(['hostname', '-f'], encoding='utf8').rstrip()
+    conf_dir = 'config'
+    template = argv[1]
+    keys = {'fqdn': fqdn}
+    for fname in listdir(conf_dir):
+        keys[fname] = list(filter(None,
+                                  (line.rstrip()
+                                   for line in open(join(conf_dir, fname)))))
+    keys.setdefault('dkim_selector', 'dkim')
+    t = Template(open(template).read())
+    data = t.render(**keys).rstrip('\n')
+    print(data)

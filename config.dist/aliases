@@ -1,0 +1,7 @@
+root: user
+security: root
+abuse: root
+sysadmin: root
+postmaster: root
+hostmaster: root
+certmaster: root

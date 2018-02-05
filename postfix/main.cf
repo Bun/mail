@@ -1,0 +1,64 @@
+compatibility_level = 2
+
+# Domains
+# -------
+
+myhostname = {{ fqdn }}
+mydomain = {{ domains[0] }}
+myorigin = $mydomain
+mynetworks_style = host
+mydestination = {{ ', '.join(domains) }}
+
+
+# Mailboxes and aliases
+# ---------------------
+
+# TODO: add +- for dovecot >2.3
+recipient_delimiter = +
+
+alias_maps = hash:/etc/postfix/aliases
+local_recipient_maps =
+
+# Forwarding
+# TODO: use this for fulladdr-to-mailbox translation
+# http://www.postfix.org/VIRTUAL_README.html#in_virtual_other
+#virtual_alias_domains = ??
+virtual_alias_maps = hash:/etc/postfix/virtual
+
+
+# Dovecot (auth/delivery)
+# -----------------------
+
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = /var/spool/postfix/private/auth
+mailbox_transport = lmtp:unix:/run/dovecot/lmtp
+unknown_local_recipient_reject_code = 450
+
+
+# Filtering & stuff
+# -----------------
+
+smtpd_relay_restrictions = permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_unauth_destination{% for dnsbl_host in dnsbl %},
+    reject_rbl_client {{ dnsbl_host }}{% endfor %}
+
+milter_default_action = accept
+milter_connect_macros = j
+smtpd_milters = unix:/run/opendkim/opendkim.sock
+non_smtpd_milters = unix:/run/opendkim/opendkim.sock
+
+
+# Other
+# -----
+
+# Disable rate limiting
+smtpd_client_event_limit_exceptions = static:all
+manpage_directory = /usr/share/man
+
+
+# TLS
+# ---
+
+smtpd_tls_cert_file = /etc/postfix/cert/{{ fqdn }}/fullchain
+smtpd_tls_key_file = /etc/postfix/cert/{{ fqdn }}/privkey
