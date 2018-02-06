@@ -52,7 +52,7 @@ non_smtpd_milters = unix:/run/opendkim/opendkim.sock
 # Other
 # -----
 
-# Disable rate limiting
+# Disable rate limiting (suppresses anvil log messages, XXX)
 smtpd_client_event_limit_exceptions = static:all
 manpage_directory = /usr/share/man
 
