@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+"""
+Change user password
+"""
+from __future__ import print_function
+from subprocess import Popen, PIPE
+
+
+def get_hash(password, scheme):
+    p = Popen(['doveadm', 'pw', '-s', scheme], encoding='utf8',
+              stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    h, err = p.communicate(password + '\n' + password + '\n')
+    if p.wait() != 0:
+        raise ValueError('doveadm call failed: ' + err)
+    return h.rstrip('\n')
+
+
+if __name__ == '__main__':
+    from sys import argv, stdin
+    from os.path import exists
+
+    fname = argv[1]
+    username = argv[2]
+    scheme = argv[3] if argv[3:] else 'BLF-CRYPT'
+    password = stdin.read().rstrip('\n')
+
+    h = get_hash(password, scheme)
+    if not h:
+        raise ValueError('Failed to get hash for %s' % (scheme,))
+
+    pfile = ''
+    found = False
+    if exists(fname):
+        for line in open(fname):
+            parts = line.rstrip('\n').split(':')
+            if parts and parts[0] == username:
+                if not found:
+                    parts[1] = h
+                    found = True
+                    pfile += ':'.join(parts) + '\n'
+            else:
+                pfile += line
+    if not found:
+        pfile += '%s:%s::::::\n' % (username, h)
+
+    with open(fname, 'w') as fp:
+        fp.write(pfile)

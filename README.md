@@ -7,36 +7,37 @@ Or just use the templates as inspiration for your own custom setup!
 
 Goals:
 - Reasonable defaults
+- Works on Alpine Linux out of the box
 - As secure as possible
 - Virtual mailboxes
 - Support for acmetool (hlandau/acme)
 
-Dependencies:
+Script dependencies:
 - Python
 - Jinja2
 
 **This is a work in progress. TODO:**
 
 - Improve deploy script
-- Change password digest to Argon
+- Change password digest to Argon (needs Dovecot v2.3+)
+- Test Dovecot sieve
 - Implement DKIM keygen helper
 - Make OpenDKIM optional?
 
 
 ## Usage
 
-Install `postfix`, `dovecot`, and `opendkim` via your package manager of choice.
+Install `postfix`, `dovecot`, and `opendkim` via your package manager of choice:
 
-Copy the default configuration and edit them as required:
+    apk add opendkim postfix dovecot
+
+Create the directory where mail will be stored:
+
+    install -o vmail -g vpopmail -m 700 -d /var/mail
+
+Copy the default configuration and edit it as required:
 
     cp -r config.dist config
-
-Run the deploy script:
-
-    ./bin/deploy
-
-
-## Meta configuration files
 
 The `config` directory contains files that are used to build the configuration.
 Each filename represents a variable that can be used in the template.
@@ -51,10 +52,19 @@ Each filename represents a variable that can be used in the template.
 * `passwd`: contains the list of users that can use the mail server, in Dovecot
   passdb format
 
+Run the deploy script:
+
+    ./bin/deploy
+
 
 ## Managing users
 
-TODO: add examples.
+Users and passwords are stored in `/etc/dovecot/passwd` in a format similar to
+`/etc/passwd`.
+
+XXX: there is an example script (`bin/mail-passwd`) for creating password file
+entries.
+Example: `echo password | sudo ./bin/mail-passwd /etc/dovecot/passwd user`
 
 
 ## DKIM
