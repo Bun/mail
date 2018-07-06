@@ -7,6 +7,9 @@ myhostname = {{ fqdn }}
 mydomain = {{ domains[0] }}
 myorigin = $mydomain
 mynetworks_style = host
+{%- if whitelist_hosts %}
+mynetworks = {{ ' '.join(whitelist_hosts) }}
+{%- endif %}
 mydestination = {{ ', '.join(domains) }}
 
 
@@ -60,5 +63,6 @@ manpage_directory = /usr/share/man
 # TLS
 # ---
 
+#smtpd_tls_mandatory_protocols =  !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
 smtpd_tls_cert_file = /etc/postfix/cert/{{ fqdn }}/fullchain
 smtpd_tls_key_file = /etc/postfix/cert/{{ fqdn }}/privkey
