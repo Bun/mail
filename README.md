@@ -13,7 +13,7 @@ Goals:
 - Support for acmetool (hlandau/acme)
 
 Script dependencies:
-- Python
+- Python 3
 - Jinja2
 
 **This is a work in progress. TODO:**
@@ -21,7 +21,7 @@ Script dependencies:
 - Improve deploy script
 - Change password digest to Argon (needs Dovecot v2.3+)
 - Test Dovecot sieve
-- Implement DKIM keygen helper
+- DKIM key path should include selector
 - Make OpenDKIM optional?
 
 

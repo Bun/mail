@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+from argparse import ArgumentParser
+
+parser = ArgumentParser(description='Generate keys for DKIM')
+parser.add_argument('-f', '--force', action='store_true',
+                    help='Replace existing keys')
+
+if __name__ == '__main__':
+    from os.path import join, exists
+    from subprocess import check_call
+
+    args = parser.parse_args()
+
+    conf_dir = 'config'
+    key_path = '/etc/opendkim/privkeys'
+    with open(join(conf_dir, 'domains')) as fp:
+        domains = [domain.rstrip() for domain in fp if domain.rstrip()]
+    for domain in domains:
+        privkey = join(key_path, '%s.key' % domain)
+        pubkey = join(key_path, '%s.pub' % domain)
+        dns = join(key_path, '%s.dns' % domain)
+        replace = False
+        if exists(privkey) and not args.force:
+            print('Skipping', domain, 'because it exists')
+        else:
+            check_call(['openssl', 'genpkey', '-algorithm', 'RSA',
+                        '-out', privkey, '-pkeyopt', 'rsa_keygen_bits:2048'])
+            replace = True
+        if replace or not exists(pubkey):
+            check_call(['openssl', 'rsa', '-pubout',
+                        '-in', privkey,
+                        '-out', pubkey])
+            replace = True
+        if replace or not exists(dns):
+            single_line = []
+            with open(pubkey) as fp:
+                for line in fp:
+                    if line.startswith('-----'):
+                        continue
+                    single_line.append(line.strip())
+            single_line = ''.join(single_line)
+            with open(dns, 'w') as fp:
+                fp.write(single_line)
+                fp.write('\n')
