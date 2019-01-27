@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from collections import UserList
+from os.path import exists
 
 
 class fancylist(UserList):
@@ -21,7 +22,8 @@ if __name__ == '__main__':
     fqdn = check_output(['hostname', '-f'], encoding='utf8').rstrip()
     conf_dir = 'config'
     template = argv[1]
-    keys = {'fqdn': fqdn}
+    keys = {'exists': exists,
+            'fqdn': fqdn}
     for fname in listdir(conf_dir):
         items = filter(None,
                        (line.rstrip()

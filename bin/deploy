@@ -18,13 +18,15 @@ render dovecot/dovecot.conf
 
 ln -nsf /var/lib/acme/live /etc/postfix/cert
 
+render postfix/main.cf
+render postfix/master.cf
+render postfix/tls_policy
+
 # XXX: render?
 cp config/aliases /etc/postfix/aliases
 postalias /etc/postfix/aliases
-cp config/virtual postfix/virtual
+cp config/virtual /etc/postfix/virtual
 postalias /etc/postfix/virtual
-
-render postfix/main.cf
-render postfix/master.cf
+postmap /etc/postfix/tls_policy
 
 echo "Done"

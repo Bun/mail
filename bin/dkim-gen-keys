@@ -8,18 +8,23 @@ parser.add_argument('-f', '--force', action='store_true',
 
 if __name__ == '__main__':
     from os.path import join, exists
+    from os import mkdir
     from subprocess import check_call
 
     args = parser.parse_args()
 
     conf_dir = 'config'
-    key_path = '/etc/opendkim/privkeys'
+    key_path_base = '/etc/opendkim/privkeys'
+    selector = open(join(conf_dir, 'dkim_selector')).read().strip()
     with open(join(conf_dir, 'domains')) as fp:
         domains = [domain.rstrip() for domain in fp if domain.rstrip()]
     for domain in domains:
-        privkey = join(key_path, '%s.key' % domain)
-        pubkey = join(key_path, '%s.pub' % domain)
-        dns = join(key_path, '%s.dns' % domain)
+        key_path = join(key_path_base, domain)
+        if not exists(key_path):
+            mkdir(key_path, 0o750)
+        privkey = join(key_path, '%s.key' % selector)
+        pubkey = join(key_path, '%s.pub' % selector)
+        dns = join(key_path, '%s.dns' % selector)
         replace = False
         if exists(privkey) and not args.force:
             print('Skipping', domain, 'because it exists')
@@ -41,5 +46,6 @@ if __name__ == '__main__':
                     single_line.append(line.strip())
             single_line = ''.join(single_line)
             with open(dns, 'w') as fp:
+                fp.write('%s._domainkey IN TXT ("v=DKIM1; h=sha256; k=rsa; p=' % selector)
                 fp.write(single_line)
-                fp.write('\n')
+                fp.write('")\n')

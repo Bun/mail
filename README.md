@@ -79,6 +79,7 @@ being marked as spam.
 ### Generating or rotating keys
 
 Determine the name of the selector you will use next (e.g. `dkim$date`).
+Keys will be stored in `/etc/opendkim/privkeys/$domain/$selector.key`.
 
 Generate new keys:
 
@@ -92,6 +93,15 @@ Rotate the keys:
     echo dkim$date > config/dkim_selector
     ./bin/deploy
     service opendkim reload
+
+# Ubuntu
+
+Change `/etc/default/opendkim`:
+
+    USER=opendkim
+    GROUP=mail
+
+Run `/lib/opendkim/opendkim.service.generate`
 
 
 # Implementation details
